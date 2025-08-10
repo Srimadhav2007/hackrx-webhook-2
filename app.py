@@ -1,5 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from llm_code import query_vertex_ai_rag_engine
 import json
 
@@ -7,6 +10,15 @@ PROMPT = """For the given question below, refer to the document url and answer t
                 The returned answers must be in json format string, with no other text with it before or after it, with key being "answers", and value being JSON array of answers\n"""
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 @app.post("/hackrx/run")
 async def doc_load(request: Request):
